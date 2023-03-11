@@ -40,3 +40,17 @@ heart_summary_table <- heart_train |>
 
 heart_summary_table
 
+heart_train_summary <- heart_train |>
+    group_by(cp, diagnosis) |> 
+    summarize(chol = mean(chol))
+
+heart_train_summary
+    
+
+#exploratory data analysis: plot of cholesterol vs chest pain type, separated by diagnosis
+chol_cp_plot <- ggplot(heart_train_summary, aes(x = cp, y = chol, fill = diagnosis)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+theme(text = element_text(size = 16))
+
+                       
+chol_cp_plot
