@@ -1,0 +1,42 @@
+#load in libraries
+library(tidyverse)
+library(repr)
+library(tidymodels)
+
+colnames <- c("age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "num")
+             
+heart_data <- read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data',
+                      col_names = colnames)
+
+heart_data <- select(heart_data, age, sex, cp, chol, num) 
+#in the original data format: 0 represents female, 1 male
+
+
+#change the formatting of some observation types: from numbers into something a little more readable
+heart_data <- mutate(heart_data, 
+                diagnosis = ifelse(num != 0, "Y", "N"),
+                sex = ifelse(sex == 0, "F", "M"),
+                cp = as_factor(cp)) |>
+                mutate(diagnosis = as_factor(diagnosis),
+                       sex = as_factor(sex)) |>
+                select(-num)
+
+
+# separating into training/testing subgroups
+
+set.seed(1) #set a random seed
+
+
+heart_split <- initial_split(heart_data, prop = 0.75, strata = diagnosis, sex)
+heart_train <- training(heart_split)
+heart_test <- testing(heart_split)
+
+num_obs <- nrow(heart_train)
+
+heart_summary_table <- heart_train |>
+    group_by(diagnosis, sex) |>
+    summarize(count = n(), 
+              percentage = n() / num_obs * 100)
+
+heart_summary_table
+
