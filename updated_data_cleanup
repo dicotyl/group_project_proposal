@@ -3,17 +3,24 @@ library(repr)
 library(tidymodels)
 library(dplyr)
 
+# new code block
+
 colnames <- c("age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "num")
              
 heart_data <- read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data',
                       col_names = colnames)
 
+
+#clean up the data for readability
 heart_data <- mutate(heart_data, 
                 diagnosis = ifelse(num == 0, "N", "Y"),
                 sex = ifelse(sex == 0, "F", "M")) |>
                 mutate(diagnosis = as_factor(diagnosis))
 
 
+
+
+#break into training and testing data subsets
 set.seed(1) # set a random seed! 
 
 
@@ -28,7 +35,8 @@ heart_summary_table <- heart_train |>
     summarize(count = n(), 
               percentage = n() / num_obs * 100)
 
-heart_summary_table
+heart_summary_table # shows you some numbers. to get the gist
+
 
 # at a glance: cholesterol, age, and sex as predictors of heart disease
 
