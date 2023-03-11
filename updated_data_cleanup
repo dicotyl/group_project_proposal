@@ -1,0 +1,66 @@
+library(tidyverse)
+library(repr)
+library(tidymodels)
+library(dplyr)
+
+colnames <- c("age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "num")
+             
+heart_data <- read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data',
+                      col_names = colnames)
+
+heart_data <- mutate(heart_data, 
+                diagnosis = ifelse(num == 0, "N", "Y"),
+                sex = ifelse(sex == 0, "F", "M")) |>
+                mutate(diagnosis = as_factor(diagnosis))
+
+
+set.seed(1) # set a random seed! 
+
+
+heart_split <- initial_split(heart_data, prop = 0.75, strata = diagnosis, sex)
+heart_train <- training(heart_split)
+heart_test <- testing(heart_split)
+
+num_obs <- nrow(heart_train)
+
+heart_summary_table <- heart_train |>
+    group_by(diagnosis, sex) |>
+    summarize(count = n(), 
+              percentage = n() / num_obs * 100)
+
+heart_summary_table
+
+# at a glance: cholesterol, age, and sex as predictors of heart disease
+
+options(repr.plot.width = 10, repr.plot.height = 6)           
+
+train_count <- nrow(heart_train)
+print(paste("Number of observations in training set:", train_count))
+#summary(heart_train)
+
+heart_plot <- ggplot(heart_train, aes(x = age, y = chol, color = as_factor(diagnosis))) +
+  geom_point() +
+  facet_grid(cols = vars(sex)) +
+  labs(x = "age", y = "serum cholestoral in mg/dl", color = "diagnosis of heart disease") +
+  scale_color_discrete(labels = c("no heart disease", "heart disease")) +
+   theme(text = element_text(size = 16))
+
+heart_plot
+
+
+#exploring more variables: maximum achieved heart rate (and age, diagnosis)
+
+age_thalach_plot <- ggplot(heart_train, aes(x = age, y = thalach, color = diagnosis)) +
+  geom_point() +
+  facet_grid(cols = vars(sex)) +
+  labs(x = "Age of patient", y = "Maximum heart rate measured") +
+theme(text = element_text(size = 16))
+
+age_thalach_plot
+
+sex_thalach_hist <- ggplot(heart_train, aes(y = diagnosis, fill = sex)) +
+    geom_bar() +
+    labs(x = "# of patients", y = "Diagnosis of heart disease?") +
+#    scale_fill_manual("sex", values = c("M" = "deepskyblue3", "F" = "indianred3")) +
+    theme(text = element_text(size = 20))
+sex_thalach_hist
